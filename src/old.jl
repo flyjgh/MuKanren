@@ -4,6 +4,44 @@ import Base: map, bind, string, show, print, ≡, tail
 
 # struct ∅ end
 
+# ----------------------------------------------------------
+
+# Cartesian Product struct
+mutable struct ×{α,β}
+  l::α
+  r::β
+end
+
+unit(α) = α × ()
+
+×(iterable::α) where α = foldr(×, iterable)
+×(x...) = ×(x)
+
+car(x::×) = x.l
+cdr(x::×) = x.r
+
+Base.length(ρ::×{α,×{β,γ}}) where {α,β,γ} = 1 + Base.length(ρ.r)
+Base.length(ρ::×) = 2
+
+Base.firstindex(ρ::×) = 1
+Base.lastindex(ρ::×{α,×{β,γ}}) where {α,β,γ} = length(ρ)
+Base.lastindex(ρ::×{α,Tuple{}}) where α = 1
+Base.lastindex(ρ::×) = 2
+
+Base.getindex(ρ::×, i::α) where α <: Integer = i <= 1 ? ρ.l : ρ.r[i-1]
+Base.getindex(ρ::×, r::α) where α <: AbstractRange = (r .|> σ -> ρ[σ])
+
+Base.show(io::IO, ρ::×) = print(io, "(", string(ρ[begin])*" ", .*("(", string.(ρ[begin+1:end-1]), " ")..., ρ[end], repeat(")", length(ρ)-1))
+
+# x = ×(2:5...)
+# x = 1 × x
+# length(x)
+# x[1] = 5
+# x[1:3] = [6,7,8]
+# x
+# print.(x)
+
+# ----------------------------------------------------------
 struct var
     i
 end
